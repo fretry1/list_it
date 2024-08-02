@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../view/list_content_page.dart';
+import 'list_content_page.dart';
 
 class ProfilePage extends StatelessWidget {
   @override

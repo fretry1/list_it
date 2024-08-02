@@ -4,10 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../global/color.dart';
 import '../widget/ListCard.dart';
 
-class ListViewPage extends StatelessWidget {
+class ListPage extends StatelessWidget {
   final List<ListCard> items;
 
-  const ListViewPage({super.key, required this.items});
+  const ListPage({super.key, required this.items});
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:list_it/screen/profile_page.dart';
-import 'package:list_it/view/list_view.dart';
+import 'package:list_it/screen/list_page.dart';
 
 import '../global/color.dart';
 import '../global/icon.dart';
@@ -17,7 +17,7 @@ class HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    ListViewPage(items: [
+    ListPage(items: [
       ListCard(
         title: 'Grocery List',
         additionalInfo: '3 items',
