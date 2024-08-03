@@ -6,6 +6,7 @@ import '../global/color.dart';
 import '../model/item_list.dart';
 import '../provider/item_list_provider.dart';
 import '../widget/list_card.dart';
+import 'add_list_page.dart';
 import 'list_content_page.dart';
 
 class ListPage extends StatelessWidget {
@@ -13,12 +14,15 @@ class ListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ItemListProvider>(
-      builder: (context, itemListProvider, child) {
-        final List<ItemList> lists = itemListProvider.itemLists;
-        if (lists.isEmpty) return _noListsYetView();
-        return _listView(context, lists, itemListProvider);
-      },
+    return Scaffold(
+      body: Consumer<ItemListProvider>(
+        builder: (context, itemListProvider, child) {
+          final List<ItemList> lists = itemListProvider.itemLists;
+          if (lists.isEmpty) return _noListsYetView();
+          return _listView(context, lists, itemListProvider);
+        },
+      ),
+      floatingActionButton: _addListButton(context),
     );
   }
 
@@ -92,5 +96,20 @@ class ListPage extends StatelessWidget {
 
   SvgPicture _happyOrange(double width, double height) {
     return SvgPicture.asset('asset/svg/picture/happy_orange.svg', width: width, height: height);
+  }
+
+  FloatingActionButton _addListButton(BuildContext context) {
+    return FloatingActionButton.extended(
+      label: const Text('ADD LIST'),
+      icon: const Icon(Icons.add),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddListPage(),
+          ),
+        );
+      },
+    );
   }
 }
