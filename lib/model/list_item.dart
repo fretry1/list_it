@@ -10,7 +10,7 @@ class ListItem {
   double quantity;
   QuantityUnit unit;
   double price;
-
+  bool checked = false;
 
   ListItem({
     required this.id,
@@ -27,6 +27,11 @@ class ListItem {
         quantity = quantity ?? 0,
         unit = unit ?? QuantityUnit.none,
         price = price ?? 0.0;
+
+  void check() {
+    checked = !checked;
+  }
+
 }
 
 enum QuantityUnit {

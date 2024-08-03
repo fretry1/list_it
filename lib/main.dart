@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:list_it/provider/item_list_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:list_it/screen/login_page.dart';
 import 'package:list_it/screen/sign_up_page.dart';
 import '../theme/theme.dart';
@@ -13,10 +15,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: AppTheme.getThemeData(),
-      initialRoute: Routes.loginScreen.route,
-      onGenerateRoute: _onGenerateRoute,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ItemListProvider()),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.getThemeData(),
+        initialRoute: Routes.loginScreen.route,
+        onGenerateRoute: _onGenerateRoute,
+      )
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:list_it/screen/list_page.dart';
 
 import '../global/color.dart';
 import '../global/icon.dart';
-import '../widget/ListCard.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,28 +14,6 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-
-  static final List<Widget> _widgetOptions = <Widget>[
-    ListPage(items: [
-      ListCard(
-        title: 'Grocery List',
-        additionalInfo: '3 items',
-        listSize: '2 days ago',
-        imagePath: 'asset/svg/picture/list_card/groceries.svg',
-        onTap: () => print('################ LIST CARD TAPPED'),
-        onOptionsTap: () => print('################ LIST CARD OPTIONS TAPPED'),
-      ),
-      ListCard(
-        title: 'Products',
-        additionalInfo: 'Imported list',
-        listSize: '0/8 items',
-        imagePath: 'asset/svg/picture/list_card/products.svg',
-        onTap: () => print('################ LIST CARD TAPPED'),
-        onOptionsTap: () => print('################ LIST CARD OPTIONS TAPPED'),
-      ),
-    ]),
-    ProfilePage(),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +56,9 @@ class HomePageState extends State<HomePage> {
       onTap: _onItemTapped,
     );
   }
+
+  static List<Widget> get _widgetOptions => [
+    ListPage(),
+    ProfilePage(),
+  ];
 }
-
-
-

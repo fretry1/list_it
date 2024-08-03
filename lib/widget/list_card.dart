@@ -6,7 +6,7 @@ import '../global/color.dart';
 class ListCard extends StatelessWidget {
   final String title;
   final String additionalInfo;
-  final String listSize;
+  final int itemCount;
   final String imagePath;
   final VoidCallback onTap;
   final VoidCallback onOptionsTap;
@@ -15,7 +15,7 @@ class ListCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.additionalInfo,
-    required this.listSize,
+    required this.itemCount,
     required this.imagePath,
     required this.onTap,
     required this.onOptionsTap,
@@ -119,7 +119,7 @@ class ListCard extends StatelessWidget {
           ),
         ),
         Text(
-          listSize,
+          itemCount.toString(),
           style: const TextStyle(
             color: Colors.grey,
             fontSize: 14,
