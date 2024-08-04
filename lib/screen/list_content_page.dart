@@ -8,6 +8,7 @@ import '../model/category.dart';
 import '../model/item_list.dart';
 import '../model/list_item.dart';
 import '../provider/item_list_provider.dart';
+import 'item_form_page.dart';
 
 class ListContentPage extends StatelessWidget {
   final int listIndex;
@@ -27,6 +28,7 @@ class ListContentPage extends StatelessWidget {
             title: Text(itemList.title),
           ),
           body: _listViewBuilder(groupedItems, itemListProvider, itemList),
+          floatingActionButton: _addItemButton(context),
         );
       },
     );
@@ -60,6 +62,22 @@ class ListContentPage extends StatelessWidget {
       groupedItems.putIfAbsent(item.category, () => []).add(item);
     }
     return groupedItems;
+  }
+
+  FloatingActionButton _addItemButton(BuildContext context) {
+    return FloatingActionButton.extended(
+      backgroundColor: AppColors.green_600,
+      label: const Text('ADD ITEM'),
+      icon: const Icon(Icons.add),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ItemFormPage(listIndex: listIndex),
+          ),
+        );
+      },
+    );
   }
 
 

@@ -100,6 +100,7 @@ class ListPage extends StatelessWidget {
 
   FloatingActionButton _addListButton(BuildContext context) {
     return FloatingActionButton.extended(
+      backgroundColor: AppColors.green_600,
       label: const Text('ADD LIST'),
       icon: const Icon(Icons.add),
       onPressed: () {

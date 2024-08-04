@@ -8,9 +8,9 @@ class ListItem {
   Category category; // default to Category
   String note;
   double quantity;
-  QuantityUnit unit;
+  QuantityUnit quantityUnit;
   double price;
-  bool checked = false;
+  bool checked;
 
   ListItem({
     required this.id,
@@ -21,12 +21,14 @@ class ListItem {
     double? quantity,
     QuantityUnit? unit,
     double? price,
+    bool? checked,
   }) :
         category = category ?? Category.defaults.values.first,
         note = note ?? '',
         quantity = quantity ?? 0,
-        unit = unit ?? QuantityUnit.none,
-        price = price ?? 0.0;
+        quantityUnit = unit ?? QuantityUnit.none,
+        price = price ?? 0.0,
+        checked = checked ?? false;
 
   void check() {
     checked = !checked;
