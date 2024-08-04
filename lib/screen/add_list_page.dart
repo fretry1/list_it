@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:list_it/global/style.dart';
 import 'package:provider/provider.dart';
 
 import '../global/color.dart';
@@ -56,37 +57,9 @@ class _AddListPageState extends State<AddListPage> {
     );
   }
 
-  InputDecoration _textFieldDecoration({required String title}) {
-    return InputDecoration(
-      labelText: title,
-      alignLabelWithHint: true,
-      labelStyle: TextStyle(color: Colors.grey[600]),
-      floatingLabelStyle: const TextStyle(color: AppColors.green_600),
-      filled: true,
-      fillColor: Colors.grey[200],
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.green_600),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.red_600),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.red_600),
-      ),
-      isDense: true,
-    );
-  }
-
   TextFormField _titleField() {
     return TextFormField(
-      decoration: _textFieldDecoration(title: 'Title'),
+      decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Title'),
       autofocus: true,
       onChanged: (value) {
         setState(() {
@@ -107,7 +80,7 @@ class _AddListPageState extends State<AddListPage> {
 
   TextFormField _noteField() {
     return TextFormField(
-      decoration: _textFieldDecoration(title: 'Note'),
+      decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Note'),
       minLines: 3,
       maxLines: 9,
       onSaved: (value) {

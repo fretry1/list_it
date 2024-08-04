@@ -91,6 +91,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
           _categoryTile(),
           _noteField(padding: padding),
           _countRow(padding: padding),
+          _quantityUnitSelector(padding: padding),
           _confirmButton(padding: padding),
         ],
       ),
@@ -170,23 +171,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
       padding: padding,
       child: TextFormField(
         initialValue: _note,
-        decoration: InputDecoration(
-          labelText: 'Note',
-          alignLabelWithHint: true,
-          labelStyle: TextStyle(color: Colors.grey[600]),
-          floatingLabelStyle: const TextStyle(color: Colors.blueAccent),
-          filled: true,
-          fillColor: Colors.grey[200],
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.blueAccent),
-          ),
-          isDense: true,
-        ),
+        decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Note'),
         minLines: 3,
         maxLines: null,
         onSaved: (value) => _note = value ?? '',
@@ -204,22 +189,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
               controller: _qtyController,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                labelText: 'Count',
-                labelStyle: TextStyle(color: Colors.grey[600]),
-                floatingLabelStyle: const TextStyle(color: Colors.blueAccent),
-                filled: true,
-                fillColor: Colors.grey[200],
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.blueAccent),
-                ),
-                isDense: true,
-              ),
+              decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Quantity'),
               onChanged: (value) => _quantity = value.isEmpty ? 0 : double.parse(value),
               onSaved:   (value) => _quantity = double.tryParse(value ?? '') ?? 0,
             ),
@@ -229,16 +199,16 @@ class _ItemFormPageState extends State<ItemFormPage> {
 
           // Increase button
           Material(
-            elevation: 2,
+            elevation: 1,
             borderRadius: BorderRadius.circular(8),
             color: Colors.white,
             child: InkWell(
               borderRadius: BorderRadius.circular(4),
               onTap: () {
                 if (_qtyController.text.isEmpty) {
-                  _quantity = 0;
+                  _quantity = _getIncrement(_quantityUnit);
                 } else {
-                  _quantity = double.parse(_qtyController.text) + 1;
+                  _quantity = double.parse(_qtyController.text) + _getIncrement(_quantityUnit);
                 }
                 _qtyController.text = _quantity.toString();
               },
@@ -256,15 +226,15 @@ class _ItemFormPageState extends State<ItemFormPage> {
 
           // Decrease button
           Material(
-            elevation: 2,
+            elevation: 1,
             borderRadius: BorderRadius.circular(8),
             color: Colors.white,
             child: InkWell(
               borderRadius: BorderRadius.circular(4),
               onTap: () {
-                if (_qtyController.text.isEmpty || _quantity! < 1) return;
+                if (_qtyController.text.isEmpty || _quantity! == 0) return;
                 setState(() {
-                  _quantity = max(0, double.parse(_qtyController.text) - 1);
+                  _quantity = max(0, double.parse(_qtyController.text) - _getIncrement(_quantityUnit));
                   _qtyController.text = _quantity == 0 ? '' : _quantity.toString();
                 });
               },
@@ -278,6 +248,41 @@ class _ItemFormPageState extends State<ItemFormPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  double _getIncrement(QuantityUnit? unit) {
+    switch (unit) {
+      case QuantityUnit.none:
+      case QuantityUnit.kg:
+      case QuantityUnit.l:
+        return 1.0;
+      case QuantityUnit.g:
+      case QuantityUnit.ml:
+        return 100.0;
+      default: return 1;
+    }
+  }
+
+  Widget _quantityUnitSelector({required EdgeInsets padding}) {
+    return Padding(
+      padding: padding,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: QuantityUnit.values.map((unit) {
+          return Expanded(
+            child: CustomRadio(
+              value: unit,
+              groupValue: _quantityUnit,
+              onChanged: (QuantityUnit? value) {
+                setState(() {
+                  _quantityUnit = value;
+                });
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -330,5 +335,45 @@ class _ItemFormPageState extends State<ItemFormPage> {
       }
       Navigator.pop(context);
     }
+  }
+}
+
+class CustomRadio extends StatelessWidget {
+  final QuantityUnit value;
+  final QuantityUnit? groupValue;
+  final ValueChanged<QuantityUnit?> onChanged;
+
+  const CustomRadio({
+    super.key,
+    required this.value,
+    required this.groupValue,
+    required this.onChanged
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSelected = value == groupValue;
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.green_600 : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.green_600 : AppColors.grey_400,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            value.name,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppColors.grey_400,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
