@@ -25,4 +25,8 @@ class ItemList {
     }
     items[itemIdx] = item;
   }
+
+  void removeCheckedItems() {
+    items.removeWhere((item) => item.checked);
+  }
 }

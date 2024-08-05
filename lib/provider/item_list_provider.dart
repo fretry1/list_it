@@ -89,4 +89,9 @@ class ItemListProvider with ChangeNotifier {
       ),
     ];
   }
+
+  void removeCheckedItems(int listIndex) {
+    itemLists[listIndex].removeCheckedItems();
+    notifyListeners();
+  }
 }

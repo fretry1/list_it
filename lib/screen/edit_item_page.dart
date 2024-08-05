@@ -1,8 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:list_it/global/style.dart';
 import 'package:list_it/model/list_item.dart';
@@ -14,21 +12,21 @@ import '../model/item.dart';
 import '../provider/item_list_provider.dart';
 import 'category_selection_page.dart';
 
-class ItemFormPage extends StatefulWidget {
+class EditItemPage extends StatefulWidget {
   final int listIndex;
   final int? itemIndex;
 
-  const ItemFormPage({super.key, required this.listIndex, this.itemIndex});
+  const EditItemPage({super.key, required this.listIndex, this.itemIndex});
 
   @override
-  _ItemFormPageState createState() => _ItemFormPageState();
+  _EditItemPageState createState() => _EditItemPageState();
 }
 
-class _ItemFormPageState extends State<ItemFormPage> {
+class _EditItemPageState extends State<EditItemPage> {
   static const _pageTopColor = Color(0xFFF3CF8F);
 
-  late final bool editMode;
-  bool _buttonEnabled = false;
+  late final bool _editMode;
+  late bool _buttonEnabled;
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
@@ -41,7 +39,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
   late Category _category;
   String? _note;
   double? _quantity;
-  QuantityUnit? _quantityUnit;
+  late QuantityUnit _quantityUnit;
   double? _price;
 
 
@@ -49,7 +47,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
   void initState() {
     super.initState();
     if (widget.itemIndex == null) {
-      editMode = false;
+      _editMode = false;
+      _buttonEnabled = true;
       _title = '';
       _category = Category.defaults[DefaultCategory.uncategorized]!; // TODO: FIX enum
       _note = null;
@@ -57,7 +56,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
       _quantityUnit = QuantityUnit.none;
       _price = null;
     } else {
-      editMode = true;
+      _editMode = true;
+      _buttonEnabled = true;
       ListItem item = Provider.of<ItemListProvider>(context, listen: false)
         .itemLists[widget.listIndex]
         .items[widget.itemIndex!];
@@ -74,7 +74,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add item'),
+        title: Text(_editMode ? 'Edit item' : 'Add item'),
         backgroundColor: _pageTopColor,
       ),
       body: _body(),
@@ -203,14 +203,14 @@ class _ItemFormPageState extends State<ItemFormPage> {
             borderRadius: BorderRadius.circular(8),
             color: Colors.white,
             child: InkWell(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(8),
               onTap: () {
                 if (_qtyController.text.isEmpty) {
                   _quantity = _getIncrement(_quantityUnit);
                 } else {
                   _quantity = double.parse(_qtyController.text) + _getIncrement(_quantityUnit);
                 }
-                _qtyController.text = _quantity.toString();
+                _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
               },
               child: Container(
                 padding: const EdgeInsets.all(12), // Adjust padding as needed
@@ -230,12 +230,12 @@ class _ItemFormPageState extends State<ItemFormPage> {
             borderRadius: BorderRadius.circular(8),
             color: Colors.white,
             child: InkWell(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(8),
               onTap: () {
                 if (_qtyController.text.isEmpty || _quantity! == 0) return;
                 setState(() {
                   _quantity = max(0, double.parse(_qtyController.text) - _getIncrement(_quantityUnit));
-                  _qtyController.text = _quantity == 0 ? '' : _quantity.toString();
+                  _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
                 });
               },
               child: Container(
@@ -250,6 +250,15 @@ class _ItemFormPageState extends State<ItemFormPage> {
         ],
       ),
     );
+  }
+
+  String _formatQuantity(double? quantity, QuantityUnit? unit) {
+    if (quantity == null) return '';
+    if (unit == QuantityUnit.none || unit == QuantityUnit.g || unit == QuantityUnit.ml) {
+      return quantity.toStringAsFixed(0);
+    } else {
+      return quantity.toString();
+    }
   }
 
   double _getIncrement(QuantityUnit? unit) {
@@ -275,9 +284,10 @@ class _ItemFormPageState extends State<ItemFormPage> {
             child: CustomRadio(
               value: unit,
               groupValue: _quantityUnit,
-              onChanged: (QuantityUnit? value) {
+              onChanged: (QuantityUnit value) {
                 setState(() {
                   _quantityUnit = value;
+                  _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
                 });
               },
             ),
@@ -292,9 +302,9 @@ class _ItemFormPageState extends State<ItemFormPage> {
       padding: padding,
       width: double.maxFinite,
       child: TextButton(
-        style: _buttonEnabled ? AppStyles.defaultButton : AppStyles.defaultDisabledButton,
+        style: _buttonEnabled ? AppStyles.defaultButton() : AppStyles.defaultDisabledButton,
         onPressed: _buttonEnabled ? _handleConfirm : null,
-        child: Text(editMode ? 'SAVE' : 'ADD'),
+        child: Text(_editMode ? 'SAVE' : 'ADD'),
       ),
     );
   }
@@ -303,7 +313,7 @@ class _ItemFormPageState extends State<ItemFormPage> {
     ItemListProvider itemListProvider = Provider.of<ItemListProvider>(context, listen: false);
     if (_formKey.currentState!.validate()) {
 
-      if (editMode) {
+      if (_editMode) {
         _formKey.currentState!.save();
         final updatedItem = ListItem(
           id: DateTime.now().millisecondsSinceEpoch,
@@ -340,8 +350,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
 
 class CustomRadio extends StatelessWidget {
   final QuantityUnit value;
-  final QuantityUnit? groupValue;
-  final ValueChanged<QuantityUnit?> onChanged;
+  final QuantityUnit groupValue;
+  final ValueChanged<QuantityUnit> onChanged;
 
   const CustomRadio({
     super.key,
