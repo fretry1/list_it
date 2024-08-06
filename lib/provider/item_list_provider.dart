@@ -20,6 +20,17 @@ class ItemListProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns true if name changed, else false.
+  bool renameItemList(int listIndex, String name) {
+    try {
+      _itemLists[listIndex].title = name;
+      notifyListeners();
+      return true;
+    } on ArgumentError {
+      return false;
+    }
+  }
+
   void addItemToList(int listIndex, ListItem item) {
     _itemLists[listIndex].items.add(item);
     notifyListeners();

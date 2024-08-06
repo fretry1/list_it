@@ -2,11 +2,23 @@ import 'list_item.dart';
 
 class ItemList {
   final int id;
-  final String title;
+  late String _title;
   final String description;
   final List<ListItem> items;
 
-  ItemList(this.id, this.title, this.description, this.items);
+  ItemList(this.id, String title, this.description, this.items) {
+    _title = title;
+  }
+
+  String get title => _title;
+
+  set title(String title) {
+    title = title.trim();
+    if (title.isEmpty || !RegExp(r'^[a-zA-Z0-9\s]*$').hasMatch(title)) {
+      throw ArgumentError("Title must consist of only alphanumeric and whitespace characters.");
+    }
+    _title = title;
+  }
 
   void addItem(ListItem item) {
     items.add(item);

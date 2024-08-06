@@ -28,7 +28,6 @@ class _EditItemPageState extends State<EditItemPage> {
   late final bool _editMode;
   late bool _buttonEnabled;
 
-  final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
@@ -48,7 +47,7 @@ class _EditItemPageState extends State<EditItemPage> {
     super.initState();
     if (widget.itemIndex == null) {
       _editMode = false;
-      _buttonEnabled = true;
+      _buttonEnabled = false;
       _title = '';
       _category = Category.defaults[DefaultCategory.uncategorized]!; // TODO: FIX enum
       _note = null;
@@ -83,28 +82,25 @@ class _EditItemPageState extends State<EditItemPage> {
 
   Widget _body() {
     EdgeInsets padding = const EdgeInsets.only(top: 16, left: 16, right: 16);
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          _itemNameField(),
-          _categoryTile(),
-          _noteField(padding: padding),
-          _countRow(padding: padding),
-          _quantityUnitSelector(padding: padding),
-          _confirmButton(padding: padding),
-        ],
-      ),
+    return ListView(
+      children: [
+        _itemNameField(),
+        _categoryTile(),
+        _noteField(padding: padding),
+        _countRow(padding: padding),
+        _quantityUnitSelector(padding: padding),
+        _confirmButton(padding: padding),
+      ],
     );
   }
 
   Widget _itemNameField() {
     return Container(
       color: _pageTopColor,
-      padding: const EdgeInsets.only(left: 16, right: 16),
-      child: TextFormField(
-        initialValue: _title,
-        onChanged: _onItemNameTextChanged,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        controller: _titleController,
+        onChanged: (value) => setState(() => _buttonEnabled = value.isNotEmpty),
         decoration: InputDecoration(
           hintText: 'Item name',
           hintStyle: const TextStyle(color: AppColors.grey_300),
@@ -118,34 +114,15 @@ class _EditItemPageState extends State<EditItemPage> {
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
           ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.redAccent),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.redAccent),
-          ),
         ),
-        onSaved: (value) => _title = value ?? '',
       ),
     );
-  }
-
-  void _onItemNameTextChanged(String value) {
-    setState(() {
-      if (value.isEmpty) {
-        _buttonEnabled = false;
-      } else {
-        _buttonEnabled = true;
-      }
-    });
   }
 
   Widget _categoryTile() {
     return ListTile(
       tileColor: _pageTopColor,
-      leading: Icon(Icons.satellite, color: Colors.grey,), // TODO: fix category icons
+      leading: const Icon(Icons.satellite, color: Colors.grey), // TODO: fix category icons
       title: Text(_category.title, style: TextStyle(color: Colors.grey[700])),
       trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
       onTap: () async {
@@ -170,11 +147,11 @@ class _EditItemPageState extends State<EditItemPage> {
     return Padding(
       padding: padding,
       child: TextFormField(
+        controller: _noteController,
         initialValue: _note,
         decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Note'),
         minLines: 3,
         maxLines: null,
-        onSaved: (value) => _note = value ?? '',
       ),
     );
   }
@@ -185,75 +162,60 @@ class _EditItemPageState extends State<EditItemPage> {
       child: Row(
         children: [
           Expanded(
-            child: TextFormField(
+            child: TextField(
               controller: _qtyController,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Quantity'),
-              onChanged: (value) => _quantity = value.isEmpty ? 0 : double.parse(value),
-              onSaved:   (value) => _quantity = double.tryParse(value ?? '') ?? 0,
+              onChanged: (value) => setState(() {
+                _quantity = value.isEmpty ? 0 : double.parse(value);
+              }),
             ),
           ),
 
           const SizedBox(width: 8),
 
-          // Increase button
-          Material(
-            elevation: 1,
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () {
-                if (_qtyController.text.isEmpty) {
-                  _quantity = _getIncrement(_quantityUnit);
-                } else {
-                  _quantity = double.parse(_qtyController.text) + _getIncrement(_quantityUnit);
-                }
-                _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12), // Adjust padding as needed
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
+          _quantityButton( // increase button
+            icon: Icons.add,
+            onPressed: () => setState(() {
+              _quantity = (_quantity ?? 0) + _getIncrement(_quantityUnit);
+              _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
+            }),
           ),
 
           const SizedBox(width: 8),
 
-          // Decrease button
-          Material(
-            elevation: 1,
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () {
-                if (_qtyController.text.isEmpty || _quantity! == 0) return;
-                setState(() {
-                  _quantity = max(0, double.parse(_qtyController.text) - _getIncrement(_quantityUnit));
-                  _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12), // Adjust padding as needed
-                child: const Icon(
-                  Icons.remove,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
+          _quantityButton( // decrease button
+            icon: Icons.remove,
+            onPressed: () => setState(() {
+              if (_qtyController.text.isEmpty) return;
+              _quantity = max(0, double.parse(_qtyController.text) - _getIncrement(_quantityUnit));
+              _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
+            }),
           ),
         ],
       ),
     );
   }
 
+  Widget _quantityButton({required IconData icon, required VoidCallback onPressed}) {
+    return Material(
+      elevation: 1,
+      borderRadius: BorderRadius.circular(8),
+      color: Colors.white,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(icon, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+
   String _formatQuantity(double? quantity, QuantityUnit? unit) {
-    if (quantity == null) return '';
+    if (quantity == null || quantity < 0.1) return '';
     if (unit == QuantityUnit.none || unit == QuantityUnit.g || unit == QuantityUnit.ml) {
       return quantity.toStringAsFixed(0);
     } else {
@@ -302,7 +264,7 @@ class _EditItemPageState extends State<EditItemPage> {
       padding: padding,
       width: double.maxFinite,
       child: TextButton(
-        style: _buttonEnabled ? AppStyles.defaultButton() : AppStyles.defaultDisabledButton,
+        style: _buttonEnabled ? AppStyles.defaultButtonStyle() : AppStyles.defaultDisabledButton,
         onPressed: _buttonEnabled ? _handleConfirm : null,
         child: Text(_editMode ? 'SAVE' : 'ADD'),
       ),
@@ -310,41 +272,25 @@ class _EditItemPageState extends State<EditItemPage> {
   }
 
   void _handleConfirm() {
+    if (!_buttonEnabled) return;
+
     ItemListProvider itemListProvider = Provider.of<ItemListProvider>(context, listen: false);
-    if (_formKey.currentState!.validate()) {
 
-      if (_editMode) {
-        _formKey.currentState!.save();
-        final updatedItem = ListItem(
-          id: DateTime.now().millisecondsSinceEpoch,
-          item: Item(id: DateTime.now().millisecondsSinceEpoch, title: _title), // TODO: fix
-          title: _title,
-          quantity: _quantity,
-          category: _category,
-          note: _note,
-          checked: itemListProvider
-              .itemLists[widget.listIndex]
-              .items[widget.itemIndex!]
-              .checked,
-        );
-        itemListProvider.updateItem(widget.listIndex, widget.itemIndex!, updatedItem);
-      }
+    final newItem = ListItem(
+      id: DateTime.now().millisecondsSinceEpoch,
+      item: Item(id: DateTime.now().millisecondsSinceEpoch, title: _titleController.text),
+      title: _titleController.text,
+      quantity: _quantity,
+      category: _category,
+      note: _noteController.text,
+      checked: _editMode
+        ? itemListProvider.itemLists[widget.listIndex].items[widget.itemIndex!].checked
+        : false,
+    );
 
-      else {
-        _formKey.currentState!.save();
-        final newItem = ListItem(
-          id: DateTime.now().millisecondsSinceEpoch,
-          item: Item(id: DateTime.now().millisecondsSinceEpoch, title: _title),
-          title: _title,
-          quantity: _quantity,
-          category: _category,
-          note: _note,
-          checked: false,
-        );
-        itemListProvider.addItemToList(widget.listIndex, newItem);
-      }
-      Navigator.pop(context);
-    }
+    if (_editMode) { itemListProvider.updateItem(widget.listIndex, widget.itemIndex!, newItem); }
+    else { itemListProvider.addItemToList(widget.listIndex, newItem); }
+    Navigator.pop(context);
   }
 }
 

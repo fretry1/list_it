@@ -3,7 +3,7 @@ import 'package:list_it/global/color.dart';
 
 class AppStyles {
 
-  static ButtonStyle defaultButton({Color? backgroundColor}) {
+  static ButtonStyle defaultButtonStyle({Color? backgroundColor}) {
     return ButtonStyle(
         backgroundColor: WidgetStateProperty.all<Color>(backgroundColor ?? AppColors.green_600),
         foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
@@ -28,7 +28,7 @@ class AppStyles {
   static ElevatedButton defaultMaterialButton({required String text, required VoidCallback onPressed, Color? backgroundColor}) {
     return ElevatedButton(
       onPressed: onPressed,
-      style: defaultButton(backgroundColor: backgroundColor),
+      style: defaultButtonStyle(backgroundColor: backgroundColor),
       child: Text(text),
     );
   }

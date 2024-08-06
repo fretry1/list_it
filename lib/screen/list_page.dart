@@ -6,6 +6,7 @@ import '../global/color.dart';
 import '../model/item_list.dart';
 import '../provider/item_list_provider.dart';
 import '../widget/list_card.dart';
+import '../widget/list_options_popup.dart';
 import 'add_list_page.dart';
 import 'list_content_page.dart';
 
@@ -36,7 +37,7 @@ class ListPage extends StatelessWidget {
         },
         children: List.generate(
           lists.length,
-          (index) => _listCard(context, lists[index], index, key: ValueKey(lists[index].id),
+          (index) => _listCard(context, lists[index], index, itemListProvider, key: ValueKey(lists[index].id),
           ),
         ),
 
@@ -53,7 +54,7 @@ class ListPage extends StatelessWidget {
     );
   }
 
-  ListCard _listCard(BuildContext context, ItemList list, int listIndex, {required Key key}) {
+  ListCard _listCard(BuildContext context, ItemList list, int listIndex, ItemListProvider itemListProvider, {required Key key}) {
     return ListCard(
       key: key,
       title: list.title,
@@ -71,7 +72,8 @@ class ListPage extends StatelessWidget {
         );
       },
       onOptionsTap: () {
-        // TODO: implement options
+        print('##################   List options tapped');
+        _showListOptionsPopup(context, listIndex, itemListProvider);
       },
     );
   }
@@ -111,6 +113,19 @@ class ListPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showListOptionsPopup(BuildContext context, int listIndex, ItemListProvider itemListProvider) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return ListOptionsPopup(
+          listIndex: listIndex,
+          itemListProvider: itemListProvider
+        );
+      }
     );
   }
 }
