@@ -61,19 +61,25 @@ class RenameListPopup extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        TextButton(
-          child: const Text('Cancel'),
-          style: AppStyles.defaultButtonStyle(backgroundColor: AppColors.red_600),
-          onPressed: () => Navigator.of(context).pop(),
+        SizedBox(
+          width: 72,
+          child: TextButton(
+            child: const Text('Cancel'),
+            style: AppStyles.defaultButtonStyle(backgroundColor: AppColors.red_600),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
         const SizedBox(width: 8),
-        TextButton(
-          child: const Text('Save'),
-          style: AppStyles.defaultButtonStyle(backgroundColor: AppColors.green_600),
-          onPressed: ()  {
-            itemListProvider.renameItemList(listIndex, _textCtrl.text);
-            Navigator.of(context).pop();
-          },
+        SizedBox(
+          width: 72,
+          child: TextButton(
+            child: const Text('Save'),
+            style: AppStyles.defaultButtonStyle(backgroundColor: AppColors.green_600),
+            onPressed: ()  {
+              itemListProvider.renameItemList(listIndex, _textCtrl.text);
+              Navigator.of(context).pop();
+            },
+          ),
         ),
       ],
     );

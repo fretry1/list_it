@@ -19,10 +19,10 @@ class EditItemPage extends StatefulWidget {
   const EditItemPage({super.key, required this.listIndex, this.itemIndex});
 
   @override
-  _EditItemPageState createState() => _EditItemPageState();
+  EditItemPageState createState() => EditItemPageState();
 }
 
-class _EditItemPageState extends State<EditItemPage> {
+class EditItemPageState extends State<EditItemPage> {
   static const _pageTopColor = Color(0xFFF3CF8F);
 
   late final bool _editMode;
@@ -61,6 +61,7 @@ class _EditItemPageState extends State<EditItemPage> {
         .itemLists[widget.listIndex]
         .items[widget.itemIndex!];
       _title = item.title;
+      _titleController.text = _title;
       _category = item.category;
       _note = item.note;
       _quantity = item.quantity;
@@ -146,9 +147,8 @@ class _EditItemPageState extends State<EditItemPage> {
   Widget _noteField({required EdgeInsets padding}) {
     return Padding(
       padding: padding,
-      child: TextFormField(
+      child: TextField(
         controller: _noteController,
-        initialValue: _note,
         decoration: AppStyles.defaultTextFieldDecoration(labelText: 'Note'),
         minLines: 3,
         maxLines: null,
@@ -240,19 +240,17 @@ class _EditItemPageState extends State<EditItemPage> {
     return Padding(
       padding: padding,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: QuantityUnit.values.map((unit) {
-          return Expanded(
-            child: CustomRadio(
-              value: unit,
-              groupValue: _quantityUnit,
-              onChanged: (QuantityUnit value) {
-                setState(() {
-                  _quantityUnit = value;
-                  _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
-                });
-              },
-            ),
+          return CustomRadio(
+            value: unit,
+            groupValue: _quantityUnit,
+            onChanged: (QuantityUnit value) {
+              setState(() {
+                _quantityUnit = value;
+                _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
+              });
+            },
           );
         }).toList(),
       ),
@@ -312,7 +310,7 @@ class CustomRadio extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(value),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+        width: 64, // TODO: implement dynamic sizing instead of constant
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.green_600 : Colors.white,
