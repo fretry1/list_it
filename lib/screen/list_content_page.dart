@@ -25,6 +25,7 @@ class ListContentPage extends StatelessWidget {
         final Map<Category, List<ListItem>> groupedItems = _groupItemsByCategory(itemList);
 
         return Scaffold(
+          backgroundColor: AppColors.grey_75,
           appBar: AppBar(
             title: Text(itemList.title),
           ),
@@ -44,32 +45,36 @@ class ListContentPage extends StatelessWidget {
     );
   }
 
-  ListView _listViewBuilder(Map<Category, List<ListItem>> groupedItems, ItemListProvider itemListProvider, ItemList itemList) {
-    return ListView.builder(
-      itemCount: groupedItems.keys.length,
-      itemBuilder: (context, categoryIndex) {
-        final category = groupedItems.keys.elementAt(categoryIndex);
-        final List<ListItem> items = groupedItems[category]!;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _CategoryDelimiterTile(categoryName: category.title),
-              ...items.map((item) => _ItemTile(
-                item: item,
-                onTap: () => itemListProvider.markItemAsChecked(listIndex, itemList.items.indexOf(item)),
-                onEditTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditItemPage(listIndex: listIndex, itemIndex: itemList.items.indexOf(item)),
-                    ),
-                  );
-                },
+  Container _listViewBuilder(Map<Category, List<ListItem>> groupedItems, ItemListProvider itemListProvider, ItemList itemList) {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      child: ListView.builder(
+        itemCount: groupedItems.keys.length,
+        itemBuilder: (context, categoryIndex) {
+          final category = groupedItems.keys.elementAt(categoryIndex);
+          final List<ListItem> items = groupedItems[category]!;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _CategoryDelimiterTile(categoryName: category.title),
+                ...items.map((item) => _ItemTile(
+                  item: item,
+                  onTap: () => itemListProvider.markItemAsChecked(listIndex, itemList.items.indexOf(item)),
+                  onEditTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditItemPage(listIndex: listIndex, itemIndex: itemList.items.indexOf(item)),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        );
-      }
+              const SizedBox(height: 12),
+            ],
+          );
+        }
+      ),
     );
   }
 
@@ -79,22 +84,6 @@ class ListContentPage extends StatelessWidget {
       groupedItems.putIfAbsent(item.category, () => []).add(item);
     }
     return groupedItems;
-  }
-
-  FloatingActionButton _addItemButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      backgroundColor: AppColors.green_600,
-      label: const Text('ADD ITEM'),
-      icon: const Icon(Icons.add),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditItemPage(listIndex: listIndex),
-          ),
-        );
-      },
-    );
   }
 
   Widget _floatingActionBar(BuildContext context, ItemListProvider itemListProvider) {
@@ -135,22 +124,21 @@ class _CategoryDelimiterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.maxFinite,
-      child: Material(
-        elevation: 2,
-        child: Container(
-          padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-          color: color,
-          child: Text(
-            categoryName,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-              fontVariations: [FontVariation('wght', 350)]
-            )
-          ),
-        ),
+    return _tile([
+      const Icon(Icons.image, color: AppColors.green_600),
+      const SizedBox(width: 12),
+      Text(categoryName),
+    ]);
+  }
+
+  Widget _tile(List<Widget> children) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      height: 32,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white),
+      child: Row(
+        children: children,
+        mainAxisAlignment: MainAxisAlignment.center,
       ),
     );
   }
@@ -161,36 +149,36 @@ class _ItemTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEditTap;
 
-  _ItemTile({
+  const _ItemTile({
     required this.item,
     required this.onTap,
     required this.onEditTap,
+
   });
 
   @override
   Widget build(BuildContext context) {
     return _listTile([
-      _checkbox(size: 24),
+      _checkbox(size: 32),
       _title(),
       const SizedBox(width: 8),
-      _count(),
-      const SizedBox(width: 8),
+
+      if (item.quantity != 0) _count(),
+      if (item.quantity != 0) const SizedBox(width: 8),
+
       _iconButton(),
-    ]
-    );
+      const SizedBox(width: 8),
+    ]);
   }
 
   Widget _listTile(List<Widget> children) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
-              children: children
-          ),
-        ),
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        height: 48,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white),
+        child: Row(children: children),
       ),
     );
   }
@@ -217,18 +205,40 @@ class _ItemTile extends StatelessWidget {
   }
 
   Widget _count() {
-    return Text(
-      '${item.quantity.toInt()}',
-      style: TextStyle(
-        decoration: item.checked ? TextDecoration.lineThrough : TextDecoration.none,
+    return GestureDetector(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: 36,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: AppColors.grey_75, borderRadius: BorderRadius.circular(8)),
+          child: Text(
+            item.fmtQty(),
+            style: TextStyle(
+              decoration: item.checked ? TextDecoration.lineThrough : TextDecoration.none,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _iconButton() {
-    return IconButton(
-      icon: const Icon(Icons.chevron_right, color: AppColors.grey_400),
-      onPressed: onEditTap,
+    return GestureDetector(
+      onTap: onEditTap,
+      child: Container(
+        decoration: BoxDecoration(color: AppColors.grey_75, borderRadius: BorderRadius.circular(8)),
+        width: 36,
+        height: 36,
+        child: const Icon(
+          Icons.more_vert,
+          color: AppColors.grey_400,
+          size: 20,
+        )
+      ),
     );
   }
 }

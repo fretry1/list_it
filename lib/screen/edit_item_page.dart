@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:list_it/global/style.dart';
@@ -61,12 +62,14 @@ class EditItemPageState extends State<EditItemPage> {
         .itemLists[widget.listIndex]
         .items[widget.itemIndex!];
       _title = item.title;
-      _titleController.text = _title;
       _category = item.category;
       _note = item.note;
       _quantity = item.quantity;
       _quantityUnit = item.quantityUnit;
       _price = item.price;
+
+      _titleController.text = _title;
+      _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
     }
   }
 
@@ -237,23 +240,15 @@ class EditItemPageState extends State<EditItemPage> {
   }
 
   Widget _quantityUnitSelector({required EdgeInsets padding}) {
-    return Padding(
+    return QuantityUnitSelector(
       padding: padding,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: QuantityUnit.values.map((unit) {
-          return CustomRadio(
-            value: unit,
-            groupValue: _quantityUnit,
-            onChanged: (QuantityUnit value) {
-              setState(() {
-                _quantityUnit = value;
-                _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
-              });
-            },
-          );
-        }).toList(),
-      ),
+      selectedUnit: _quantityUnit,
+      onUnitChanged: (QuantityUnit value) {
+        setState(() {
+          _quantityUnit = value;
+          _qtyController.text = _formatQuantity(_quantity, _quantityUnit);
+        });
+      }
     );
   }
 
@@ -279,6 +274,7 @@ class EditItemPageState extends State<EditItemPage> {
       item: Item(id: DateTime.now().millisecondsSinceEpoch, title: _titleController.text),
       title: _titleController.text,
       quantity: _quantity,
+      quantityUnit: _quantityUnit,
       category: _category,
       note: _noteController.text,
       checked: _editMode
@@ -289,6 +285,40 @@ class EditItemPageState extends State<EditItemPage> {
     if (_editMode) { itemListProvider.updateItem(widget.listIndex, widget.itemIndex!, newItem); }
     else { itemListProvider.addItemToList(widget.listIndex, newItem); }
     Navigator.pop(context);
+  }
+}
+
+class QuantityUnitSelector extends StatelessWidget {
+  final QuantityUnit selectedUnit;
+  final ValueChanged<QuantityUnit> onUnitChanged;
+  final EdgeInsets padding;
+
+  const QuantityUnitSelector({
+    super.key,
+    required this.selectedUnit,
+    required this.onUnitChanged,
+    this.padding = EdgeInsets.zero,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Row(
+        children: [
+          for (int i = 0; i < QuantityUnit.values.length; i++) ...[
+            if (i > 0) const SizedBox(width: 6),
+            Expanded(
+              child: CustomRadio(
+                value: QuantityUnit.values[i],
+                groupValue: selectedUnit,
+                onChanged: onUnitChanged,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
@@ -310,7 +340,6 @@ class CustomRadio extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(value),
       child: Container(
-        width: 64, // TODO: implement dynamic sizing instead of constant
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.green_600 : Colors.white,

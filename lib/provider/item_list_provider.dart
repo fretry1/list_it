@@ -80,7 +80,7 @@ class ItemListProvider with ChangeNotifier {
     Item item6 = Item(id: 6, title: 'hand soap');
 
     List<ListItem> listItems2 = [
-      ListItem(id: item4.id, item: item4, title: item4.title, category: Category.defaults[DefaultCategory.frozen]),
+      ListItem(id: item4.id, item: item4, title: item4.title, category: Category.defaults[DefaultCategory.frozen], quantity: 16, quantityUnit: QuantityUnit.kg),
       ListItem(id: item5.id, item: item5, title: item5.title, category: Category.defaults[DefaultCategory.frozen]),
       ListItem(id: item6.id, item: item6, title: item6.title, category: Category.defaults[DefaultCategory.hygiene])
     ];
